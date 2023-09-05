@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Conectar</title>
+</head>
+<body>
+
+    <h1>Hola {{ user }}</h1>
+
+    {% if fundacion.is_stripe_account_verified %}
+        <h3>Enhorabuena. Estás conectado con stripe.</h3>
+    {% else %}
+        <a href="{% url 'conectar' %}">Conecta con stripe</a>
+    {% endif %}
+
+    <ul>
+        {% for f in fundacion_list %}
+            <li><a href="{% url 'donar' f.id %}">Donar a: {{ f.user }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h3>Stripe data:</h3>
+    <pre>{{ fundacion.stripe_account }}</pre>
+
+
+</body>
+</html>
