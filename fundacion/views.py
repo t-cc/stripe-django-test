@@ -49,50 +49,140 @@ def conectar(request):
 
 def donar(request, fundacion_id):
     fundacion = get_object_or_404(Fundacion, pk=fundacion_id)
-    # print(fundacion.stripe_account)
-    indent = None
-    link = None
-    indent = stripe.PaymentIntent.create(
-        api_key=settings.STRIPE_SECRET,
-        payment_method_types=["card"],
-        amount=18000,
-        currency="eur",
-        application_fee_amount=0,
-        stripe_account=fundacion.stripe_id,
-    )
-    print(indent)
+
+    url_destino = request.build_absolute_uri()
+    link_kw = {
+        "api_key": settings.STRIPE_SECRET,
+        "stripe_account": fundacion.stripe_id,
+        "after_completion": {"type": "redirect", "redirect": {"url": url_destino}},
+    }
+
     product = stripe.Product.create(
         api_key=settings.STRIPE_SECRET,
-        name="Donación",
+        name="Subscription",
         stripe_account=fundacion.stripe_id,
     )
     price = stripe.Price.create(
         api_key=settings.STRIPE_SECRET,
-        unit_amount=1200,
         currency="usd",
         product=product.id,
-        # custom_unit_amount={"enabled": True},
         stripe_account=fundacion.stripe_id,
+        unit_amount=5000,
+        recurring={
+            "interval": "month",
+        },
     )
-    # print(price)
-    link = stripe.PaymentLink.create(
-        api_key=settings.STRIPE_SECRET,
+    link_subscription = stripe.PaymentLink.create(
         line_items=[
             {
                 "price": price.id,
                 "quantity": 1,
             },
         ],
+        **link_kw
+    )
+
+    product = stripe.Product.create(
+        api_key=settings.STRIPE_SECRET,
+        name="Donación 25$",
         stripe_account=fundacion.stripe_id,
     )
-    print(link)
+    price = stripe.Price.create(
+        api_key=settings.STRIPE_SECRET,
+        unit_amount=2500,
+        currency="usd",
+        product=product.id,
+        # custom_unit_amount={"enabled": True},
+        stripe_account=fundacion.stripe_id,
+    )
+    link_25 = stripe.PaymentLink.create(
+        line_items=[
+            {
+                "price": price.id,
+                "quantity": 1,
+            },
+        ],
+        **link_kw
+    )
+
+    product = stripe.Product.create(
+        api_key=settings.STRIPE_SECRET,
+        name="Donación 100$",
+        stripe_account=fundacion.stripe_id,
+    )
+    price = stripe.Price.create(
+        api_key=settings.STRIPE_SECRET,
+        unit_amount=10000,
+        currency="usd",
+        product=product.id,
+        # custom_unit_amount={"enabled": True},
+        stripe_account=fundacion.stripe_id,
+    )
+    link_100 = stripe.PaymentLink.create(
+        line_items=[
+            {
+                "price": price.id,
+                "quantity": 1,
+            },
+        ],
+        **link_kw
+    )
+
+    product = stripe.Product.create(
+        api_key=settings.STRIPE_SECRET,
+        name="Donación 120$",
+        stripe_account=fundacion.stripe_id,
+    )
+    price = stripe.Price.create(
+        api_key=settings.STRIPE_SECRET,
+        unit_amount=12000,
+        currency="usd",
+        product=product.id,
+        # custom_unit_amount={"enabled": True},
+        stripe_account=fundacion.stripe_id,
+    )
+    link_120 = stripe.PaymentLink.create(
+        line_items=[
+            {
+                "price": price.id,
+                "quantity": 1,
+            },
+        ],
+        **link_kw
+    )
+
+    product = stripe.Product.create(
+        api_key=settings.STRIPE_SECRET,
+        name="Other Amount",
+        stripe_account=fundacion.stripe_id,
+    )
+    price = stripe.Price.create(
+        api_key=settings.STRIPE_SECRET,
+        currency="usd",
+        product=product.id,
+        custom_unit_amount={"enabled": True},
+        stripe_account=fundacion.stripe_id,
+    )
+    link_custom = stripe.PaymentLink.create(
+        line_items=[
+            {
+                "price": price.id,
+                "quantity": 1,
+            },
+        ],
+        **link_kw
+    )
+
     return render(
         request,
         "donar.html",
         {
             "fundacion": fundacion,
-            "indent": indent,
             "STRIPE_KEY": settings.STRIPE_KEY,
-            "link": link,
+            "link_25": link_25,
+            "link_100": link_100,
+            "link_120": link_120,
+            "link_custom": link_custom,
+            "link_subscription": link_subscription,
         },
     )
